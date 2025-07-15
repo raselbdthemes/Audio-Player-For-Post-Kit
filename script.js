@@ -322,5 +322,15 @@ function highlightPlaylistItem(index) {
 }
 
 // Initial setup
+
+// Initial setup
+let initialAutoplay = true;
+audio.addEventListener('canplay', function autoPlayOnReady() {
+  if (initialAutoplay) {
+    playSong();
+    initialAutoplay = false;
+    audio.removeEventListener('canplay', autoPlayOnReady);
+  }
+});
 loadSong(currentSong);
 renderPlaylist();
