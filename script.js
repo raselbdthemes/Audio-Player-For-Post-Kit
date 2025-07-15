@@ -229,17 +229,19 @@ volumeControlWrapper.addEventListener('mouseleave', () => {
 });
 
 if (volumeBar) {
+  // Set initial volume to 50%
+  audio.volume = 0.5;
+  volumeBar.value = 1 - 0.5; // Because visually top is high volume
+
   volumeBar.addEventListener('input', (e) => {
-    audio.volume = e.target.value;
-    if (audio.volume === 0) {
-      isMuted = true;
-      audio.muted = true;
-      muteBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
-    } else {
-      isMuted = false;
-      audio.muted = false;
-      muteBtn.innerHTML = '<i class="fa-solid fa-volume-up"></i>';
-    }
+    const reversedValue = 1 - e.target.value; // Invert input value
+    audio.volume = reversedValue;
+
+    isMuted = audio.volume === 0;
+    audio.muted = isMuted;
+    muteBtn.innerHTML = isMuted
+      ? '<i class="fa-solid fa-volume-xmark"></i>'
+      : '<i class="fa-solid fa-volume-up"></i>';
   });
 }
 

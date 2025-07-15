@@ -1,3 +1,7 @@
+.controls button#shuffle.active,
+.controls button#repeat.active {
+  color: #1db954;
+}
 body {
   background: #f7f7f7;
   font-family: 'Segoe UI', Arial, sans-serif;
@@ -85,11 +89,11 @@ body {
 .controls button {
   background: none;
   border: none;
-  font-size: 1.3rem;
+  font-size: 1rem;
   color: #333;
   background: none;
   border: none;
-  font-size: 1.3rem;
+  font-size: 1rem;
   color: #333;
   cursor: pointer;
   padding: 8px;
@@ -252,7 +256,7 @@ body {
 }
 
 #volume-bar {
-  writing-mode: vertical-lr; /* vertical orientation for most browsers */
+  writing-mode: vertical-lr;
   appearance: slider-vertical;
   -webkit-appearance: slider-vertical;
   width: 6px;
@@ -263,6 +267,7 @@ body {
   accent-color: #4f8cff;
   border: 0px;
 }
+
 
 @media (max-width: 600px) {
   .player-container {
