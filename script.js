@@ -15,13 +15,6 @@ const songs = [
     duration: 177
   },
   {
-    title: "Drum&Bass Electronic Inspiring Promo",
-    artist: "Thonio",
-    src: "songs/things-end.mp3",
-    cover: "songs/song-cover-photo-03.png",
-    duration: 84
-  },
-  {
     title: "Future Design",
     artist: "Shtriker Big Band",
     src: "songs/lemonade.mp3",
@@ -87,6 +80,7 @@ const playlistToggleBtn = document.getElementById('playlist-toggle');
 const playlistDiv = document.getElementById('playlist');
 const progressBar = document.getElementById('progress-bar');
 const progressContainer = document.getElementById('progress-container');
+const progressPointer = document.getElementById('progress-pointer');
 const currentTimeEl = document.getElementById('current-time');
 const durationEl = document.getElementById('duration');
 
@@ -257,13 +251,30 @@ playlistToggleBtn.addEventListener('click', () => {
 });
 
 // Progress bar update
+let isDraggingProgress = false;
 audio.addEventListener('timeupdate', () => {
+  if (isDraggingProgress) return;
   const song = songs[currentSong];
   const percent = (audio.currentTime / song.duration) * 100;
   progressBar.style.width = `${percent}%`;
   currentTimeEl.textContent = formatTime(audio.currentTime);
+  // Update pointer position
+  if (progressPointer) {
+    const barBg = progressBar.parentElement;
+    const barWidth = barBg.offsetWidth;
+    const pointerLeft = (percent / 100) * barWidth;
+    progressPointer.style.left = `${pointerLeft}px`;
+  }
 });
 audio.addEventListener('ended', () => {
+  // Only go to next song if truly at end (not just near end due to drag)
+  const song = songs[currentSong];
+  // Use a small epsilon to avoid floating point issues
+  if (audio.currentTime < song.duration - 0.5) {
+    // If ended event fired but not at end, just pause
+    audio.pause();
+    return;
+  }
   if (isRepeat) {
     audio.currentTime = 0;
     playSong();
@@ -280,6 +291,42 @@ progressContainer.addEventListener('click', (e) => {
   const song = songs[currentSong];
   audio.currentTime = percent * song.duration;
 });
+
+// Dragging logic for progress pointer
+if (progressPointer) {
+  progressPointer.addEventListener('mousedown', (e) => {
+    isDraggingProgress = true;
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDraggingProgress) return;
+    const rect = progressBar.parentElement.getBoundingClientRect();
+    let x = e.clientX - rect.left;
+    x = Math.max(0, Math.min(x, rect.width));
+    const percent = x / rect.width;
+    const song = songs[currentSong];
+    // Update bar visually instantly
+    progressBar.style.width = `${percent * 100}%`;
+    // Update pointer position instantly
+    progressPointer.style.left = `${x}px`;
+    // Update current time visually
+    currentTimeEl.textContent = formatTime(percent * song.duration);
+  });
+
+  document.addEventListener('mouseup', (e) => {
+    if (isDraggingProgress) {
+      const rect = progressBar.parentElement.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      x = Math.max(0, Math.min(x, rect.width));
+      const percent = x / rect.width;
+      const song = songs[currentSong];
+      audio.currentTime = percent * song.duration;
+      isDraggingProgress = false;
+      document.body.style.userSelect = '';
+    }
+  });
+}
 
 // Playlist rendering
 function renderPlaylist() {
@@ -326,13 +373,5 @@ function highlightPlaylistItem(index) {
 // Initial setup
 
 // Initial setup
-let initialAutoplay = true;
-audio.addEventListener('canplay', function autoPlayOnReady() {
-  if (initialAutoplay) {
-    playSong();
-    initialAutoplay = false;
-    audio.removeEventListener('canplay', autoPlayOnReady);
-  }
-});
 loadSong(currentSong);
 renderPlaylist();
