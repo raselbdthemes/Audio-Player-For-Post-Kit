@@ -159,8 +159,17 @@ shuffleBtn.addEventListener('click', () => {
   isShuffle = !isShuffle;
   shuffleBtn.classList.toggle('active', isShuffle);
   if (isShuffle) {
+    // Create a shuffled order, but keep the current song at its position
     shuffledOrder = shuffleArray([...Array(songs.length).keys()]);
-    currentSong = shuffledOrder[0];
+    // Place currentSong at the start of shuffledOrder
+    const idx = shuffledOrder.indexOf(currentSong);
+    if (idx > 0) {
+      shuffledOrder.splice(idx, 1);
+      shuffledOrder.unshift(currentSong);
+    }
+  } else {
+    // When turning off shuffle, keep currentSong as is
+    shuffledOrder = [];
   }
 });
 function shuffleArray(arr) {
@@ -172,11 +181,13 @@ function shuffleArray(arr) {
 }
 function getNextShuffledIndex() {
   let idx = shuffledOrder.indexOf(currentSong);
+  if (idx === -1) idx = 0;
   idx = (idx + 1) % shuffledOrder.length;
   return shuffledOrder[idx];
 }
 function getPrevShuffledIndex() {
   let idx = shuffledOrder.indexOf(currentSong);
+  if (idx === -1) idx = 0;
   idx = (idx - 1 + shuffledOrder.length) % shuffledOrder.length;
   return shuffledOrder[idx];
 }
