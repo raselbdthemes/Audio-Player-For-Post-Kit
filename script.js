@@ -371,7 +371,50 @@ function highlightPlaylistItem(index) {
 }
 
 // Initial setup
-
-// Initial setup
 loadSong(currentSong);
 renderPlaylist();
+
+// Dynamically update each song's duration with the actual audio duration
+function updateSongDurations() {
+  songs.forEach((song, idx) => {
+    const tempAudio = document.createElement('audio');
+    tempAudio.src = song.src;
+    tempAudio.addEventListener('loadedmetadata', function() {
+      if (!isNaN(tempAudio.duration) && tempAudio.duration > 0) {
+        song.duration = Math.round(tempAudio.duration);
+        // If playlist is rendered, update duration text
+        const playlistItems = playlistDiv.querySelectorAll('.playlist-item');
+        if (playlistItems[idx]) {
+          const durationSpan = playlistItems[idx].querySelector('.playlist-duration');
+          if (durationSpan) {
+            durationSpan.textContent = formatTime(song.duration);
+          }
+        }
+        // If current song, update duration display
+        if (idx === currentSong) {
+          durationEl.textContent = formatTime(song.duration);
+        }
+      }
+    });
+  });
+}
+
+// Call after initial render
+updateSongDurations();
+
+// Always update player duration when main audio loads metadata
+audio.addEventListener('loadedmetadata', function() {
+  if (!isNaN(audio.duration) && audio.duration > 0) {
+    songs[currentSong].duration = Math.round(audio.duration);
+    durationEl.textContent = formatTime(songs[currentSong].duration);
+    // Also update playlist item duration
+    const playlistItems = playlistDiv.querySelectorAll('.playlist-item');
+    if (playlistItems[currentSong]) {
+      const durationSpan = playlistItems[currentSong].querySelector('.playlist-duration');
+      if (durationSpan) {
+        durationSpan.textContent = formatTime(songs[currentSong].duration);
+      }
+    }
+  }
+});
+
